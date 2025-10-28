@@ -12,4 +12,9 @@ podman rm -f $(podman ps -a --filter name=lab_node* -q)
 # Remove network
 podman network rm lab_network
 
-echo "Containers and network removed."
+# Remove node count file if it exists
+if [ -f "scripts/.node_count" ]; then
+    rm scripts/.node_count
+fi
+
+echo "Containers, network, and configuration removed."

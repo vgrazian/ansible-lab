@@ -10,9 +10,9 @@ if [ ! -d "scripts" ]; then
   exit 1
 fi
 
-# Read the stored node count, default to 2 if file doesn't exist
-if [ -f ".node_count" ]; then
-    NODE_COUNT=$(cat .node_count)
+# Read the stored node count from scripts directory, default to 2 if file doesn't exist
+if [ -f "scripts/.node_count" ]; then
+    NODE_COUNT=$(cat scripts/.node_count)
     echo "Restarting with previously used node count: $NODE_COUNT"
 else
     NODE_COUNT=2
