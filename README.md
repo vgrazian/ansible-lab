@@ -26,7 +26,7 @@ ansible-lab/
 ## Quick Start
 
 1. Clone the repository
-2. Generate SSH keys and build images:
+2. Generate SSH keys (see section below) and build images:
 
    ```bash
    ./scripts/build-images.sh
@@ -49,15 +49,34 @@ ansible-lab/
    ansible-playbook -i inventory playbooks/test.yml
    ```
 
-## Custom Playbooks
+## SSH Key Setup
 
-The `ansible/` directory is mounted into the controller container at `/ansible`. You can:
+The lab uses SSH keys for authentication between the controller and nodes. While the `build-images.sh` script automatically generates keys if they don't exist, you can also manually create them:
 
-- Add your own playbooks to `ansible/playbooks/`
-- Modify the inventory in `ansible/inventory`
-- Update `ansible.cfg` for your needs
+```bash
+# Create keys directory if it doesn't exist
+mkdir -p keys
 
-Changes made to files in the `ansible/` directory on your host machine are immediately available in the container.
+# Generate SSH key pair
+ssh-keygen -t rsa -N "" -f keys/id_rsa
+```
+
+Key locations:
+
+- Private key: `keys/id_rsa`
+- Public key: `keys/id_rsa.pub`
+
+Notes:
+
+- Keys are automatically copied to the appropriate containers during build
+- The keys directory is gitignored for security
+- If you rebuild the images, existing keys will be reused
+- To generate new keys, simply delete the existing ones and rebuild:
+
+  ```bash
+  rm keys/id_rsa*
+  ./scripts/build-images.sh
+  ```
 
 ## Custom Playbooks
 
