@@ -1,6 +1,25 @@
+# macOS system files
+.DS_Store
+
+# Dynamically generated lab files
+ansible/inventory
+ansible/welcome.txt
+.node_count
+
+# SSH keys (already should be ignored, but good to be explicit)
 keys/*
 !keys/.gitkeep
 Containerfiles/controller/id_rsa*
 Containerfiles/node/id_rsa*
 Containerfiles/node/authorized_keys
-.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
