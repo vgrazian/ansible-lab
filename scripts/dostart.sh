@@ -21,6 +21,15 @@ if ! podman network exists lab_network; then
   podman network create lab_network
 fi
 
+# Clean up any existing nodes with the same names first
+echo "Cleaning up any existing containers..."
+for i in $(seq 1 $NODE_COUNT); do
+  if podman ps -a --filter name="lab_node$i" --format "{{.Names}}" | grep -q "lab_node$i"; then
+    echo "Removing existing container: lab_node$i"
+    podman rm -f "lab_node$i" >/dev/null 2>&1
+  fi
+done
+
 # Start nodes
 for i in $(seq 1 $NODE_COUNT); do
   echo "Starting node $i..."
@@ -43,13 +52,27 @@ done
 
 echo "Nodes started."
 
-# Generate welcome content on the host (simpler approach)
-WELCOME_FILE="/tmp/welcome_host.txt"
-cat > "$WELCOME_FILE" << EOF
+# Start controller (clean up any existing one first)
+if podman ps -a --filter name=ansible_controller --format "{{.Names}}" | grep -q ansible_controller; then
+  echo "Removing existing ansible_controller container..."
+  podman rm -f ansible_controller >/dev/null 2>&1
+fi
+
+# Generate welcome message completely inside the container
+podman run -it --name ansible_controller \
+  --network lab_network \
+  --cap-add=CAP_AUDIT_WRITE \
+  --cap-add=CAP_AUDIT_CONTROL \
+  -v "${LAB_DIR}/ansible:/ansible:Z" \
+  lab_ansible_controller /bin/bash -c "
+    # Generate welcome message dynamically
+    NODE_COUNT=\$(grep -c 'lab_node' /ansible/inventory)
+    
+    cat > /tmp/welcome.txt << EOF
 Welcome to your Ansible Lab Environment!
 
-You have $NODE_COUNT nodes available for testing:
-$(for i in $(seq 1 $NODE_COUNT); do echo "- lab_node$i"; done)
+You have \$NODE_COUNT nodes available for testing:
+\$(grep 'lab_node' /ansible/inventory | sort -V | sed 's/^/- /')
 
 Try these example playbooks:
 1. Simple ping test:
@@ -69,26 +92,13 @@ Your playbooks are in the /ansible/playbooks directory.
 
 Quick test commands:
 - Test web servers: curl http://lab_node1
-- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e "SELECT VERSION();"
+- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e \"SELECT VERSION();\"
 EOF
 
-# Start controller
-podman run -it --name ansible_controller \
-  --network lab_network \
-  --cap-add=CAP_AUDIT_WRITE \
-  --cap-add=CAP_AUDIT_CONTROL \
-  -v "${LAB_DIR}/ansible:/ansible:Z" \
-  -v "${WELCOME_FILE}:/tmp/welcome.txt:Z" \
-  lab_ansible_controller /bin/bash -c "
     # Display welcome message
     cat /tmp/welcome.txt
     echo ''
     echo 'Welcome message saved to: /tmp/welcome.txt'
     echo ''
-    # Clean up the host file
-    rm -f /tmp/welcome_host.txt
     exec /bin/bash
   "
-
-# Clean up the host welcome file
-rm -f "$WELCOME_FILE"
