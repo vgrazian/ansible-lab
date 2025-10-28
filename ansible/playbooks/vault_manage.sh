@@ -59,7 +59,7 @@ case "$1" in
         ;;
     run)
         if [ -f "$VAULT_PASSWORD_FILE" ]; then
-            ansible-playbook --vault-password-file "$VAULT_PASSWORD_FILE" vault_example.yml
+            ansible-playbook -i ../inventory --vault-password-file "$VAULT_PASSWORD_FILE" vault_example.yml
         else
             echo "Vault password file not found. Run './vault_manage.sh setup' first."
             exit 1

@@ -76,13 +76,13 @@ You have \$NODE_COUNT nodes available for testing:
 
 Try these example playbooks:
 1. Simple ping test:
-   ansible-playbook -i inventory playbooks/ping.yml
+   ansible-playbook -i inventory --vault-password-file .vault_pass playbooks/ping.yml
 
 2. Test connectivity and get hostnames:
-   ansible-playbook -i inventory playbooks/test.yml
+   ansible-playbook -i inventory --vault-password-file .vault_pass playbooks/test.yml
 
 3. Full site setup (webserver + database + config):
-   ansible-playbook -i inventory playbooks/site.yml
+   ansible-playbook -i inventory --vault-password-file .vault_pass playbooks/site.yml
 
 4. Vault example (secure secrets management):
    cd playbooks && ./setup_vault.sh

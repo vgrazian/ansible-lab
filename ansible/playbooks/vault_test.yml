@@ -1,0 +1,10 @@
+---
+- name: Test Vault Variables
+  hosts: all
+  tasks:
+    - name: Show vault variables
+      debug:
+        msg: |
+          API Key: {{ secret_api_key }}
+          DB Password: {{ db_password }}
+          App Secret: {{ app_secret }}

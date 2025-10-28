@@ -2,11 +2,6 @@
 - name: Ansible Vault Example - Secure Configuration Management
   hosts: all
   become: yes
-  vars:
-    # This will be overridden by vault encrypted variables
-    secret_api_key: "default_unsecure_key"
-    db_password: "default_password"
-    app_secret: "default_secret"
 
   tasks:
     - name: Create application configuration directory
@@ -22,19 +17,28 @@
         mode: '0600'
       notify: show_config_summary
 
-    - name: Display masked secret values (safe for output)
+    - name: Display partial secret values (safe for output)
       debug:
         msg: |
-          API Key: {{ secret_api_key | mask }}
-          DB Password: {{ db_password | mask }}
-          App Secret: {{ app_secret | mask }}
+          API Key (first 8 chars): {{ secret_api_key[:8] }}...
+          DB Password (first 4 chars): {{ db_password[:4] }}...
+          App Secret (first 6 chars): {{ app_secret[:6] }}...
+
+    - name: Show actual configuration file content (for verification)
+      shell: cat /etc/myapp/secure.conf
+      register: config_content
+      changed_when: false
+
+    - name: Display configuration content
+      debug:
+        var: config_content.stdout
 
     - name: Verify configuration was created
       stat:
         path: /etc/myapp/secure.conf
       register: config_file
 
-    - name: Show configuration file info (without revealing contents)
+    - name: Show configuration file info
       debug:
         msg: "Secure configuration file created at {{ config_file.stat.path }} with permissions {{ config_file.stat.mode }}"
 
