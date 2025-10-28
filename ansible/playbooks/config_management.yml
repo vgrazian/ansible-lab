@@ -18,7 +18,7 @@
 
     - name: Generate base config file
       template:
-        src: templates/myapp.conf.j2
+        src: templates/secure_app.conf.j2
         dest: /etc/myapp/myapp.conf
         mode: '0644'
 
