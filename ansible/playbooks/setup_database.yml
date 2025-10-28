@@ -1,0 +1,55 @@
+---
+- name: Setup MariaDB Server
+  hosts: all
+  become: yes
+  vars:
+    db_name: testdb
+    db_user: testuser
+    db_password: testpass
+    mysql_root_password: rootpass
+
+  tasks:
+    - name: Install MariaDB
+      apt:
+        name: 
+          - mariadb-server
+          - python3-pymysql
+        state: present
+        update_cache: yes
+
+    - name: Ensure MariaDB is running
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Update root password
+      mysql_user:
+        name: root
+        host: localhost
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: present
+
+    - name: Create .my.cnf file
+      copy:
+        dest: /root/.my.cnf
+        content: |
+          [client]
+          user=root
+          password={{ mysql_root_password }}
+        mode: '0600'
+
+    - name: Create database
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create database user
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock

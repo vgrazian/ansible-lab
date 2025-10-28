@@ -2,13 +2,31 @@
 FROM debian:12
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt -y update && apt -y install \
+# Update package lists and install basic requirements
+RUN apt-get update && apt-get install -y \
+    apt-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install main packages
+RUN apt-get update && apt-get install -y \
     ansible \
     vim \
     python3 \
     python3-pip \
-    sshpass
+    && rm -rf /var/lib/apt/lists/*
 
+# Install additional packages
+RUN apt-get update && apt-get install -y \
+    sshpass \
+    curl \
+    netcat-traditional \
+    mysql-common \
+    mariadb-common \
+    mariadb-client \
+    libmariadb3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# SSH configuration
 RUN mkdir -p /root/.ssh
 ADD id_rsa /root/.ssh/id_rsa
 ADD id_rsa.pub /root/.ssh/id_rsa.pub
