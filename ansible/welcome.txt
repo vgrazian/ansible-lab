@@ -1,9 +1,7 @@
 Welcome to your Ansible Lab Environment!
 
-You have 2 nodes available for testing:
-- lab_node1
-- lab_node2
-
+You have        2 nodes available for testing:
+- lab_node1\n- lab_node2\n
 Try these example playbooks:
 1. Simple ping test:
    ansible-playbook -i inventory playbooks/ping.yml
@@ -11,4 +9,11 @@ Try these example playbooks:
 2. Test connectivity and get hostnames:
    ansible-playbook -i inventory playbooks/test.yml
 
+3. Full site setup (webserver + database + config):
+   ansible-playbook -i inventory playbooks/site.yml
+
 Your playbooks are in the /ansible/playbooks directory.
+
+Quick test commands:
+- Test web servers: curl http://lab_node1
+- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e "SELECT VERSION();"

@@ -31,6 +31,14 @@
         login_unix_socket: /var/run/mysqld/mysqld.sock
         state: present
 
+    - name: Configure MariaDB to accept remote connections
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^bind-address'
+        line: 'bind-address = 0.0.0.0'
+        backup: yes
+      notify: restart mariadb
+
     - name: Create .my.cnf file
       copy:
         dest: /root/.my.cnf
@@ -46,10 +54,22 @@
         state: present
         login_unix_socket: /var/run/mysqld/mysqld.sock
 
-    - name: Create database user
+    - name: Create database user with remote access
       mysql_user:
         name: "{{ db_user }}"
         password: "{{ db_password }}"
+        host: "%"
         priv: "{{ db_name }}.*:ALL"
         state: present
         login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Flush privileges
+      mysql_query:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        query: "FLUSH PRIVILEGES"
+
+  handlers:
+    - name: restart mariadb
+      service:
+        name: mariadb
+        state: restarted

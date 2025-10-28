@@ -43,13 +43,26 @@ done
 
 echo "Nodes started."
 
-# Create welcome message
-cat > "${LAB_DIR}/ansible/welcome.txt" << EOF
+# Create dynamic welcome message based on inventory
+generate_welcome_message() {
+    local inventory_file="$1"
+    local welcome_file="$2"
+    
+    # Extract nodes from inventory (handles different formats)
+    local node_list=$(grep -E '^lab_node[0-9]+' "$inventory_file" | sort -V)
+    local node_count=$(echo "$node_list" | wc -l)
+    
+    # Format node list with bullets
+    local formatted_nodes=""
+    while IFS= read -r node; do
+        [[ -n "$node" ]] && formatted_nodes="${formatted_nodes}- $node\n"
+    done <<< "$node_list"
+    
+    cat > "$welcome_file" << EOF
 Welcome to your Ansible Lab Environment!
 
-You have ${NODE_COUNT} nodes available for testing:
-$(for i in $(seq 1 $NODE_COUNT); do echo "- lab_node$i"; done)
-
+You have $node_count nodes available for testing:
+${formatted_nodes}
 Try these example playbooks:
 1. Simple ping test:
    ansible-playbook -i inventory playbooks/ping.yml
@@ -57,8 +70,20 @@ Try these example playbooks:
 2. Test connectivity and get hostnames:
    ansible-playbook -i inventory playbooks/test.yml
 
+3. Full site setup (webserver + database + config):
+   ansible-playbook -i inventory playbooks/site.yml
+
 Your playbooks are in the /ansible/playbooks directory.
+
+Quick test commands:
+- Test web servers: curl http://lab_node1
+- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e "SELECT VERSION();"
 EOF
+}
+
+generate_welcome_message "${LAB_DIR}/ansible/inventory" "${LAB_DIR}/ansible/welcome.txt"
+
+echo "Generated welcome message"
 
 # Start controller with ansible volume mounted and display welcome message
 podman run -it --name ansible_controller \

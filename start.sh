@@ -10,4 +10,8 @@ fi
 
 # Pass the first argument (number of nodes) to dostart.sh, default to 2 if not specified
 NODE_COUNT=${1:-2}
+
+# Store the node count for restart
+echo "$NODE_COUNT" > .node_count
+
 scripts/dostart.sh $NODE_COUNT
