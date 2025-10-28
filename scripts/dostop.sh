@@ -3,8 +3,9 @@
 LAB_DIR=$(realpath "$(dirname "$0")/..")
 cd "$LAB_DIR"
 
-# EDIT THIS LINE IF YOU HAVE MORE NODES
-podman rm -f ansible_controller lab_node1 lab_node2
+# Remove controller and all lab nodes dynamically
+podman rm -f ansible_controller
+podman rm -f $(podman ps -a --filter name=lab_node* -q)
 
 podman network rm lab_network
 
