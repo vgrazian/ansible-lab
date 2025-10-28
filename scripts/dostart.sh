@@ -43,26 +43,23 @@ done
 
 echo "Nodes started."
 
-# Create dynamic welcome message based on inventory
-generate_welcome_message() {
-    local inventory_file="$1"
-    local welcome_file="$2"
+# Start controller - welcome message will be generated inside the container
+podman run -it --name ansible_controller \
+  --network lab_network \
+  --cap-add=CAP_AUDIT_WRITE \
+  --cap-add=CAP_AUDIT_CONTROL \
+  -v "${LAB_DIR}/ansible:/ansible:Z" \
+  lab_ansible_controller /bin/bash -c "
+    # Generate welcome message dynamically in /tmp
+    NODE_COUNT=\$(grep -c 'lab_node' /ansible/inventory)
+    NODE_LIST=\$(grep 'lab_node' /ansible/inventory | sort -V)
     
-    # Extract nodes from inventory (handles different formats)
-    local node_list=$(grep -E '^lab_node[0-9]+' "$inventory_file" | sort -V)
-    local node_count=$(echo "$node_list" | wc -l)
-    
-    # Format node list with bullets
-    local formatted_nodes=""
-    while IFS= read -r node; do
-        [[ -n "$node" ]] && formatted_nodes="${formatted_nodes}- $node\n"
-    done <<< "$node_list"
-    
-    cat > "$welcome_file" << EOF
+    cat > /tmp/welcome.txt << EOF
 Welcome to your Ansible Lab Environment!
 
-You have $node_count nodes available for testing:
-${formatted_nodes}
+You have \$NODE_COUNT nodes available for testing:
+\$(echo \"\$NODE_LIST\" | sed 's/^/- /')
+    
 Try these example playbooks:
 1. Simple ping test:
    ansible-playbook -i inventory playbooks/ping.yml
@@ -77,18 +74,13 @@ Your playbooks are in the /ansible/playbooks directory.
 
 Quick test commands:
 - Test web servers: curl http://lab_node1
-- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e "SELECT VERSION();"
+- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e \"SELECT VERSION();\"
 EOF
-}
 
-generate_welcome_message "${LAB_DIR}/ansible/inventory" "${LAB_DIR}/ansible/welcome.txt"
-
-echo "Generated welcome message"
-
-# Start controller with ansible volume mounted and display welcome message
-podman run -it --name ansible_controller \
-  --network lab_network \
-  --cap-add=CAP_AUDIT_WRITE \
-  --cap-add=CAP_AUDIT_CONTROL \
-  -v "${LAB_DIR}/ansible:/ansible:Z" \
-  lab_ansible_controller /bin/bash -c "cat /ansible/welcome.txt && echo '' && exec /bin/bash"
+    # Display welcome message
+    cat /tmp/welcome.txt
+    echo ''
+    echo 'Welcome message saved to: /tmp/welcome.txt'
+    echo ''
+    exec /bin/bash
+  "
