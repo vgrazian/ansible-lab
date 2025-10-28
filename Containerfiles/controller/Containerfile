@@ -1,0 +1,21 @@
+# This is the image for the Controller container, the one running Ansible
+FROM debian:12
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt -y update && apt -y install \
+    ansible \
+    vim \
+    python3 \
+    python3-pip \
+    sshpass
+
+RUN mkdir -p /root/.ssh
+ADD id_rsa /root/.ssh/id_rsa
+ADD id_rsa.pub /root/.ssh/id_rsa.pub
+RUN chmod 600 /root/.ssh/id_rsa
+RUN chmod 644 /root/.ssh/id_rsa.pub
+
+RUN echo "StrictHostKeyChecking no" > /root/.ssh/config
+RUN echo "UserKnownHostsFile /dev/null" >> /root/.ssh/config
+
+WORKDIR /ansible

@@ -1,0 +1,21 @@
+FROM debian:12
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt -y update && apt -y install \
+    openssh-server \
+    openssl \
+    python3 \
+    python3-apt \
+    sudo
+
+RUN mkdir -p /root/.ssh
+ADD id_rsa.pub /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys
+
+RUN ssh-keygen -A
+
+RUN echo "export PS1=\"[\u@\H \W]\$ \"" >> /etc/profile
+
+CMD ["/sbin/init"]
+
+EXPOSE 22

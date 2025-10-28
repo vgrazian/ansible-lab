@@ -1,0 +1,14 @@
+Welcome to your Ansible Lab Environment!
+
+You have 2 nodes available for testing:
+- lab_node1
+- lab_node2
+
+Try these example playbooks:
+1. Simple ping test:
+   ansible-playbook -i inventory playbooks/ping.yml
+
+2. Test connectivity and get hostnames:
+   ansible-playbook -i inventory playbooks/test.yml
+
+Your playbooks are in the /ansible/playbooks directory.

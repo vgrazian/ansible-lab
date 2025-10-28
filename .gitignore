@@ -1,0 +1,6 @@
+keys/*
+!keys/.gitkeep
+Containerfiles/controller/id_rsa*
+Containerfiles/node/id_rsa*
+Containerfiles/node/authorized_keys
+.DS_Store
