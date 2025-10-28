@@ -54,7 +54,7 @@ podman run -it --name ansible_controller \
     NODE_COUNT=\$(grep -c 'lab_node' /ansible/inventory)
     NODE_LIST=\$(grep 'lab_node' /ansible/inventory | sort -V)
     
-    cat > /tmp/welcome.txt << EOF
+    cat > /tmp/welcome.txt << 'EOF'
 Welcome to your Ansible Lab Environment!
 
 You have \$NODE_COUNT nodes available for testing:
@@ -69,6 +69,10 @@ Try these example playbooks:
 
 3. Full site setup (webserver + database + config):
    ansible-playbook -i inventory playbooks/site.yml
+
+4. Vault example (secure secrets management):
+   cd playbooks && ./setup_vault.sh
+   cd playbooks && ./vault_manage.sh run
 
 Your playbooks are in the /ansible/playbooks directory.
 

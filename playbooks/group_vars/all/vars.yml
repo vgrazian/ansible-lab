@@ -1,0 +1,6 @@
+---
+# Non-sensitive variables
+app_name: "MySecureApp"
+app_version: "1.0.0"
+database_host: "localhost"
+database_port: 3306

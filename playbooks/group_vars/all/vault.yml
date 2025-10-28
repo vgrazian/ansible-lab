@@ -1,0 +1,6 @@
+---
+# Sensitive variables - THIS FILE SHOULD BE ENCRYPTED
+secret_api_key: "AKIAIOSFODNN7EXAMPLE12345"
+db_password: "SuperSecretDBP@ssw0rd!"
+app_secret: "MyVeryLongAndComplexAppSecretKey123!"
+encryption_salt: "RandomSaltValueForHashing123"

@@ -23,3 +23,10 @@ Containerfiles/node/authorized_keys
 *.swp
 *.swo
 
+# Ansible Vault files
+# These are example secret files that can be committed for demo purposes
+# In real scenarios, avoid committing actual vault files
+# .vault_pass
+# ansible/playbooks/group_vars/all/vault.yml
+# *.vault
+# vault_password*
