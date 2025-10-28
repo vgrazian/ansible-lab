@@ -43,23 +43,14 @@ done
 
 echo "Nodes started."
 
-# Start controller - welcome message will be generated inside the container
-podman run -it --name ansible_controller \
-  --network lab_network \
-  --cap-add=CAP_AUDIT_WRITE \
-  --cap-add=CAP_AUDIT_CONTROL \
-  -v "${LAB_DIR}/ansible:/ansible:Z" \
-  lab_ansible_controller /bin/bash -c "
-    # Generate welcome message dynamically in /tmp
-    NODE_COUNT=\$(grep -c 'lab_node' /ansible/inventory)
-    NODE_LIST=\$(grep 'lab_node' /ansible/inventory | sort -V)
-    
-    cat > /tmp/welcome.txt << 'EOF'
+# Generate welcome content on the host (simpler approach)
+WELCOME_FILE="/tmp/welcome_host.txt"
+cat > "$WELCOME_FILE" << EOF
 Welcome to your Ansible Lab Environment!
 
-You have \$NODE_COUNT nodes available for testing:
-\$(echo \"\$NODE_LIST\" | sed 's/^/- /')
-    
+You have $NODE_COUNT nodes available for testing:
+$(for i in $(seq 1 $NODE_COUNT); do echo "- lab_node$i"; done)
+
 Try these example playbooks:
 1. Simple ping test:
    ansible-playbook -i inventory playbooks/ping.yml
@@ -78,13 +69,26 @@ Your playbooks are in the /ansible/playbooks directory.
 
 Quick test commands:
 - Test web servers: curl http://lab_node1
-- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e \"SELECT VERSION();\"
+- Test databases: mysql -h lab_node1 -u testuser -ptestpass testdb -e "SELECT VERSION();"
 EOF
 
+# Start controller
+podman run -it --name ansible_controller \
+  --network lab_network \
+  --cap-add=CAP_AUDIT_WRITE \
+  --cap-add=CAP_AUDIT_CONTROL \
+  -v "${LAB_DIR}/ansible:/ansible:Z" \
+  -v "${WELCOME_FILE}:/tmp/welcome.txt:Z" \
+  lab_ansible_controller /bin/bash -c "
     # Display welcome message
     cat /tmp/welcome.txt
     echo ''
     echo 'Welcome message saved to: /tmp/welcome.txt'
     echo ''
+    # Clean up the host file
+    rm -f /tmp/welcome_host.txt
     exec /bin/bash
   "
+
+# Clean up the host welcome file
+rm -f "$WELCOME_FILE"
